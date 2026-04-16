@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: "*",
-    methods: ["GET"],
+    methods: ["GET", "POST", "DELETE"],
     credentials: true,
   }),
 );
