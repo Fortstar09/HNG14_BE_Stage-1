@@ -1,150 +1,215 @@
-# Gender Classifier API
+# 📊 Profile Enrichment API
 
-A serverless API that predicts the likely gender of a given name using the Genderize.io API and returns a structured response.
-
-Deployed on Vercel.
+A Node.js + Express API that generates enriched user profiles using external APIs (Genderize, Agify, Nationalize) and stores them in a PostgreSQL (Neon) database.
 
 ---
 
-## Live API
+## 🚀 Features
 
-GET https://your-project.vercel.app/api/classify?name=john
-
----
-
-## Features
-
-- Uses Genderize.io API
-- Processes and normalizes response
-- Computes confidence score
-- Handles edge cases and errors
-- CORS enabled
-- Serverless (Vercel)
+- Create enriched user profiles using external APIs
+- Prevent duplicate profiles (based on `name`)
+- Retrieve all profiles with optional filters
+- Get profile by ID
+- Delete profile by ID
+- Case-insensitive filtering
+- Full error handling (400, 404, 422, 500, 502)
+- PostgreSQL (Neon) integration
 
 ---
 
-## Endpoint
+## 🛠️ Tech Stack
 
-GET /api/classify
-
-### Query Parameters
-
-| Parameter | Type   | Required | Description      |
-| --------- | ------ | -------- | ---------------- |
-| name      | string | Yes      | Name to classify |
-
----
-
-## Success Response (200)
-
-```json
-{
-  "status": "success",
-  "data": {
-    "name": "john",
-    "gender": "male",
-    "probability": 0.99,
-    "sample_size": 1234,
-    "is_confident": true,
-    "processed_at": "2026-04-15T12:00:00.000Z"
-  }
-}
-```
-
----
-
-## Confidence Logic
-
-is_confident = probability >= 0.7 AND sample_size >= 100
-
----
-
-## Error Responses
-
-### Missing or empty name
-
-```json
-{
-  "status": "error",
-  "message": "Missing or empty name parameter"
-}
-```
-
-### Invalid type
-
-```json
-{
-  "status": "error",
-  "message": "name is not a string"
-}
-```
-
-### No prediction available
-
-```json
-{
-  "status": "error",
-  "message": "No prediction available for the provided name"
-}
-```
-
-### Server error
-
-```json
-{
-  "status": "error",
-  "message": "Upstream or server failure"
-}
-```
-
----
-
-## CORS
-
-Access-Control-Allow-Origin: \*
-
----
-
-## Tech Stack
-
-- Node.js (Serverless Functions)
-- Vercel
+- Node.js (ES Modules)
+- Express.js
+- PostgreSQL (Neon)
 - Axios
-- Genderize.io API
+- dotenv
+- pg
 
 ---
 
-## Project Structure
+## 📦 Installation
+
+```bash
+git clone <your-repo-url>
+cd project-folder
+npm install
+```
+
+## ⚙️ Environment Variables
+
+Create a `.env` file in the root of your project:
+
+DATABASE_URL=your_neon_postgres_connection_string
+
+---
+
+## ▶️ Run Server
+
+node index.js
+
+Server runs on:
+
+http://localhost:3000
+
+---
+
+## 📌 API Endpoints
+
+---
+
+## 🔹 Create Profile
+
+POST /api/profiles
+
+Request Body:
+
+{
+"name": "ella"
+}
+
+Success Response (201):
+
+{
+"status": "success",
+"message": "Profile created successfully",
+"data": {
+"id": 1,
+"name": "ella",
+"gender": "female",
+"gender_probability": 0.99,
+"sample_size": 1234,
+"age": 46,
+"age_group": "adult",
+"country_id": "DRC",
+"country_probability": 0.85,
+"created_at": "2026-04-01T12:00:00Z"
+}
+}
+
+Duplicate Response (200):
+
+{
+"status": "success",
+"message": "Profile already exists",
+"data": {}
+}
+
+---
+
+## 🔹 Get All Profiles
+
+GET /api/profiles
+
+Optional Query Parameters:
+
+- gender
+- country_id
+- age_group
+
+Example:
+
+/api/profiles?gender=male&country_id=NG
+
+Response:
+
+{
+"status": "success",
+"count": 2,
+"data": []
+}
+
+---
+
+## 🔹 Get Profile by ID
+
+GET /api/profiles/:id
+
+Response:
+
+{
+"status": "success",
+"data": {}
+}
+
+Error Response (404):
+
+{
+"status": "error",
+"message": "Profile not found"
+}
+
+---
+
+## 🔹 Delete Profile
+
+DELETE /api/profiles/:id
+
+Success Response:
+
+204 No Content
+
+---
+
+## ⚠️ Error Format
+
+All errors follow this structure:
+
+{
+"status": "error",
+"message": "Error description"
+}
+
+---
+
+## 🔸 Status Codes
+
+400 - Bad Request (missing/invalid input)  
+422 - Invalid input type  
+404 - Not Found  
+500 - Server error  
+502 - External API failure
+
+---
+
+## 🔸 External API Rules
+
+Genderize:
+
+- gender = null OR count = 0 → return 502
+
+Agify:
+
+- age = null → return 502
+
+Nationalize:
+
+- empty country array → return 502
+
+---
+
+## 🧠 Key Logic
+
+- `name` is PRIMARY KEY (no duplicates)
+- Duplicate names return existing profile instead of creating new record
+- External APIs enrich user data
+- PostgreSQL stores final structured profile
+
+---
+
+## 📁 Project Structure
 
 project/
-├── api/
-│ └── classify.js
-├── package.json
-└── README.md
+│── index.js
+│── db.js
+│── .env
+│── routes/
+│── controllers/
+│── services/
+│── utils/
 
 ---
 
-## Local Development
+## 📜 License
 
-Install dependencies:
-npm install
-
-Run locally:
-vercel dev
-
----
-
-## Deployment
-
-1. Push to GitHub
-2. Import into Vercel
-3. Deploy
-4. Use generated URL
-
----
-
-## Notes
-
-- Serverless API (no Express needed)
-- External API latency not included in grading
-- Optimized for Vercel edge/serverless execution
+This project is for learning purposes.
